@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Edit keeporder</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ระบบสั่งอาหาร</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #111;
+    color: #fff;
+    margin: 0;
+    text-align: center;
+}
+
+/* หัว */
+h1 {
+    font-size: 22px;
+    margin: 10px;
+}
+
+/* grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+
+/* ปุ่ม */
+button {
+    padding: 18px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+}
+
+.zone { background: red; color:#fff; }
+.table { background: orange; }
+.menu { background: #3498db; color:#fff; }
+
+/* ซ่อน */
+.hidden { display:none; }
+
+/* บิล */
+.bill {
+    background: #fff;
+    color: #000;
+    margin: 10px;
+    padding: 15px;
+    font-size: 24px;
+    text-align: left;
+    border-radius: 10px;
+    white-space: pre-line;
+}
+
+/* ปุ่มล่าง */
+.bottom-btn {
+    width: 90%;
+    margin: 10px;
+    padding: 15px;
+    font-size: 20px;
+    background: limegreen;
+    color:#000;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🍺 ระบบสั่งอาหาร</h1>
+
+<!-- เลือกโซน -->
+<div id="zonePage">
+<div class="grid">
+<button class="zone" onclick="selectZone('Z')">โซน1-19</button>
+<button class="zone" onclick="selectZone('B')">B</button>
+<button class="zone" onclick="selectZone('A')">A</button>
+<button class="zone" onclick="selectZone('L')">L</button>
+<button class="zone" onclick="selectZone('S')">S</button>
+</div>
+</div>
+
+<!-- โต๊ะ -->
+<div id="tablePage" class="hidden">
+<h1>เลือกโต๊ะ</h1>
+<div id="tableList" class="grid"></div>
+<button class="bottom-btn" onclick="backZone()">⬅️ ย้อนกลับ</button>
+</div>
+
+<!-- เมนู -->
+<div id="menuPage" class="hidden">
+<h1 id="tableTitle"></h1>
+<div id="menuList" class="grid"></div>
+<button class="bottom-btn" onclick="showBill()">📄 สรุปบิล</button>
+</div>
+
+<!-- บิล -->
+<div id="billPage" class="hidden">
+<h1>🧾 บิล</h1>
+<div class="bill" id="billContent"></div>
+<button class="bottom-btn" onclick="resetAll()">🔄 สร้างบิลใหม่</button>
+</div>
+
+<script>
+let selectedTable = "";
+let orders = {};
+
+const menu = [
+"สิงโปร3/360","อาซาฮีโปร3/390","อาซาฮี1ลัง",
+"สิงขวดใหญ่","อาซาฮีขวดใหญ่","น้ำแข็ง",
+"น้ำเปล่า","โซดา","รีเจนซี่กลม",
+"รีเจนซี่แบน","แสงโสมกลม","โซจู",
+"โค้ก","สไปร์ท","สิงเลม่อน"
+];
+
+function selectZone(zone){
+    show("tablePage");
+
+    let tables = [];
+    if(zone==="Z") for(let i=1;i<=19;i++) tables.push(i);
+    if(zone==="B") for(let i=1;i<=3;i++) tables.push("B"+i);
+    if(zone==="A") for(let i=1;i<=6;i++) tables.push("A"+i);
+    if(zone==="L") for(let i=1;i<=6;i++) tables.push("L"+i);
+    if(zone==="S") for(let i=1;i<=3;i++) tables.push("S"+i);
+
+    let div = document.getElementById("tableList");
+    div.innerHTML="";
+
+    tables.forEach(t=>{
+        let b=document.createElement("button");
+        b.innerText="โต๊ะ "+t;
+        b.className="table";
+        b.onclick=()=>selectTable(t);
+        div.appendChild(b);
+    });
+}
+
+function selectTable(t){
+    selectedTable=t;
+    show("menuPage");
+
+    document.getElementById("tableTitle").innerText="โต๊ะ: "+t;
+
+    let div=document.getElementById("menuList");
+    div.innerHTML="";
+
+    menu.forEach(m=>{
+        let b=document.createElement("button");
+        b.innerText=m;
+        b.className="menu";
+        b.onclick=()=>addItem(m);
+        div.appendChild(b);
+    });
+}
+
+function addItem(item){
+    let qty=prompt("จำนวน:");
+    qty=parseInt(qty);
+    if(!qty) return;
+
+    if(!orders[item]) orders[item]=0;
+    orders[item]+=qty;
+
+    alert("เพิ่มแล้ว");
+}
+
+function showBill(){
+    show("billPage");
+
+    let now=new Date().toLocaleString("th-TH");
+
+    let text="โต๊ะ: "+selectedTable+"\n";
+    text+="เวลา: "+now+"\n\n";
+
+    for(let i in orders){
+        text+=i+" จำนวน "+orders[i]+"\n";
+    }
+
+    document.getElementById("billContent").innerText=text;
+}
+
+function backZone(){ show("zonePage"); }
+
+function resetAll(){
+    orders={};
+    selectedTable="";
+    show("zonePage");
+}
+
+function show(page){
+    ["zonePage","tablePage","menuPage","billPage"].forEach(id=>{
+        document.getElementById(id).classList.add("hidden");
+    });
+    document.getElementById(page).classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
+    
+  </body>
+  
+</html>
